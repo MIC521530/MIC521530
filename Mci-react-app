@@ -1,0 +1,108 @@
+// App.jsx - MCI React 主頁
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Admin from './pages/Admin';
+
+const coins = ['bitcoin','ethereum','binancecoin','ripple','litecoin','tether','cardano','solana','dogecoin','polkadot'];
+const coinMap = {
+  bitcoin: 'BTC', ethereum: 'ETH', binancecoin: 'BNB', ripple: 'XRP', litecoin: 'LTC', tether: 'USDT', cardano: 'ADA', solana: 'SOL', dogecoin: 'DOGE', polkadot: 'DOT'
+};
+
+function App() {
+  const [prices, setPrices] = useState({});
+  const [walletAddress, setWalletAddress] = useState('');
+
+  useEffect(() => {
+    async function fetchPrices() {
+      const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(',')}&vs_currencies=twd`);
+      setPrices(res.data);
+    }
+    fetchPrices();
+  }, []);
+
+  async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setWalletAddress(accounts[0]);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      alert('請安裝 MetaMask');
+    }
+  }
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-[#0f1115] text-gray-200 font-sans">
+        <header className="flex justify-between items-center p-6 border-b border-gray-700">
+          <div className="flex items-center text-xl font-bold">
+            <img src="/logo.png" alt="MCI Logo" className="h-10 mr-3" /> M.C.I
+          </div>
+          <nav className="space-x-4">
+            <Link to="/">首頁</Link>
+            <Link to="/admin">後台模擬</Link>
+          </nav>
+        </header>
+
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <main>
+                <section className="text-center py-16 bg-gradient-to-br from-gray-900 to-black">
+                  <h1 className="text-4xl font-bold mb-4">現代加密幣所 M.C.I</h1>
+                  <p className="text-gray-400">安全．合規．值得信賴的虛擬貨幣交易平台</p>
+                </section>
+                <section className="text-center py-6">
+                  <button
+                    onClick={connectWallet}
+                    className="px-6 py-2 bg-white/10 border border-white/20 backdrop-blur rounded-xl hover:bg-white/20"
+                  >🔗 連接錢包</button>
+                  {walletAddress && <div className="mt-2 text-sm">已連接錢包：{walletAddress}</div>}
+                </section>
+                <section className="px-4 py-10">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border border-white/10 bg-white/5 backdrop-blur rounded-xl">
+                      <thead>
+                        <tr className="bg-white/10">
+                          <th className="py-3 px-4">幣種</th>
+                          <th className="py-3 px-4">代碼</th>
+                          <th className="py-3 px-4">價格 (TWD)</th>
+                          <th className="py-3 px-4">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {coins.map(id => (
+                          <tr key={id} className="text-center border-t border-white/10">
+                            <td className="py-3 px-4">{id.charAt(0).toUpperCase() + id.slice(1)}</td>
+                            <td className="py-3 px-4">{coinMap[id]}</td>
+                            <td className="py-3 px-4">{prices[id]?.twd ? `NT$${prices[id].twd.toLocaleString()}` : '--'}</td>
+                            <td className="py-3 px-4">
+                              <button className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 rounded">買入</button>
+                              <button className="px-3 py-1 ml-2 bg-red-500/20 hover:bg-red-500/40 rounded">賣出</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </main>
+            }
+          />
+
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+
+        <footer className="text-center text-sm text-gray-500 py-6 border-t border-white/10">
+          &copy; 2025 現代加密幣所 Modern Cryptocurrency Institute (M.C.I). All rights reserved.
+        </footer>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
