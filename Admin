@@ -1,0 +1,49 @@
+// pages/Admin.jsx - 模擬交易後台頁面
+import React, { useState } from 'react';
+
+function Admin() {
+  const [logs, setLogs] = useState([]);
+  const [coin, setCoin] = useState('BTC');
+  const [amount, setAmount] = useState('');
+
+  function handleMockTrade(type) {
+    const entry = {
+      type,
+      coin,
+      amount,
+      time: new Date().toLocaleString(),
+    };
+    setLogs([entry, ...logs]);
+    setAmount('');
+  }
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">模擬交易後台</h2>
+      <div className="mb-6">
+        <label className="block mb-2">幣種</label>
+        <select value={coin} onChange={e => setCoin(e.target.value)} className="bg-gray-800 text-white p-2 rounded w-full">
+          {["BTC","ETH","BNB","XRP","LTC","USDT","ADA","SOL","DOGE","DOT"].map(c => <option key={c}>{c}</option>)}
+        </select>
+        <label className="block mt-4 mb-2">數量</label>
+        <input value={amount} onChange={e => setAmount(e.target.value)} type="number" className="bg-gray-800 text-white p-2 rounded w-full" />
+        <div className="flex gap-4 mt-4">
+          <button onClick={() => handleMockTrade('買入')} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">模擬買入</button>
+          <button onClick={() => handleMockTrade('賣出')} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">模擬賣出</button>
+        </div>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-2">模擬交易紀錄</h3>
+        <ul className="space-y-2">
+          {logs.map((log, i) => (
+            <li key={i} className="bg-white/10 p-3 rounded">
+              [{log.time}] {log.type} {log.amount} {log.coin}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default Admin;
